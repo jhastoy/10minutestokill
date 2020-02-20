@@ -18,11 +18,7 @@ position(1,(4,5),sniper).
 joueur(1,a,c,d,e). %a = tueur, c,d,e = cibles
 joueur(2,b,f,g,h).
 
-% init(LPosition,LPerso):- LPosition is
-% [2,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16], LPerso is
-% [a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p].
-
-init([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],[a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p]).
+init([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p],[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]).
 
 deplacer(_,_,[],[],[]).
 deplacer(Perso,Position,[_|LPosition], [Perso|LPerso], [Position|LPositionOut]):-deplacer(Perso,Position,LPosition, LPerso,LPositionOut).
@@ -32,26 +28,41 @@ cible(Perso,Joueur):- joueur(Joueur,_,Perso,_,_).
 cible(Perso,Joueur):- joueur(Joueur,_,_,Perso,_).
 cible(Perso,Joueur):- joueur(Joueur,_,_,_,Perso).
 
+% supprime un personnage de la liste ainsi que sa position dans la liste
+% de positions
 eliminer(_,[],[],[],[]).
 eliminer(Perso,[Perso|LPerso],[_|LPosition],LPersoOut,LPositionOut):-eliminer(Perso,LPerso,LPosition,LPersoOut,LPositionOut).
 eliminer(Perso,[X|LPerso],[Y|LPosition],[X|LPersoOut], [Y|LPositionOut]):- X\==Perso, eliminer(Perso,LPerso,LPosition,LPersoOut,LPositionOut).
 
+tuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut) :- recupCoordonnees(Tueur,LPerso,LPosition,(Xt,Yt),CaseTueur,sniper),recupCoordonnees(Cible,LPerso,LPosition,(Xc,Yc),_,_),action(Methode,LPerso,LPosition,CaseTueur,(Xt,Yt),(Xc,Yc)),eliminer(Cible,LPerso,LPosition,LPersoOut,LPositionOut).
 
-sniper(Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut):- recupPosition(Tueur,LPerso,LPosition,CaseTueur),recupPosition(Cible,LPerso,LPosition,CaseCible),position(CaseTueur,(Xt,Yt),sniper),recupPersoListe(LPersoCaseOut,LPerso,LPosition,CaseTueur),length(LPersoCaseOut,1),position(CaseCible,(Xc,Yc),_),testSniper((Xt,Yt),(Xc,Yc)),eliminer(Cible,LPerso,LPosition,LPersoOut,LPositionOut).
+
+action(sniper,LPerso,LPosition,CaseTueur,(Xt,Yt),(Xc,Yc)) :-sniper(LPerso,LPosition,CaseTueur,(Xt,Yt),(Xc,Yc)).
+action(pistolet,LPerso,LPosition,CaseTueur,(Xt,Yt),(Xc,Yc)) :-pistolet(LPerso,LPosition,CaseTueur,(Xt,Yt),(Xc,Yc)).
+action(couteau,_,_,_,(Xt,Yt),(Xc,Yc)) :-couteau((Xt,Yt),(Xc,Yc)).
+
+
+sniper(LPerso,LPosition,CaseTueur,(Xt,Yt),(Xc,Yc)):-recupPersoListe(LPersoCaseOut,LPerso,LPosition,CaseTueur),length(LPersoCaseOut,1),testSniper((Xt,Yt),(Xc,Yc)).
+
 
 testSniper((Xt,_),(Xt,_)).
 testSniper((_,Yt),(_,Yt)).
 
-pistolet(Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut):- recupPosition(Tueur,LPerso,LPosition,CaseTueur),recupPosition(Cible,LPerso,LPosition,CaseCible),position(CaseTueur,(Xt,Yt),_),recupPersoListe(LPersoCaseOut,LPerso,LPosition,CaseTueur),length(LPersoCaseOut,1),position(CaseCible,(Xc,Yc),_),testPistolet((Xt,Yt),(Xc,Yc)),eliminer(Cible,LPerso,LPosition,LPersoOut,LPositionOut).
+pistolet(LPerso,LPosition,CaseTueur,(Xt,Yt),(Xc,Yc)):- recupPersoListe(LPersoCaseOut,LPerso,LPosition,CaseTueur),length(LPersoCaseOut,1),testPistolet((Xt,Yt),(Xc,Yc)).
 
 testPistolet((Xt,Y),(Xc,Y)):-X is Xt-1, X==Xc.
 testPistolet((Xt,Y),(Xc,Y)):-X is Xt+1, X==Xc.
 testPistolet((X,Yt),(X,Yc)):-Y is Yt-1, Y==Yc.
 testPistolet((X,Yt),(X,Yc)):-Y is Yt+1, Y==Yc.
 
+couteau((Xt,Yt),(Xt,Yt)).
 
+recupCoordonnees(Perso,LPerso,LPosition,(X,Y),Case,Etat):-recupPosition(Perso,LPerso,LPosition,Case),position(Case,(X,Y),Etat).
+
+%Recupere le numero de la case d'un personnage ou inversement
 recupPosition(Perso,[Perso|_],[X|_],X).
 recupPosition(Perso,[X|LPerso],[_|LPosition],PositionOut):-X\==Perso,recupPosition(Perso, LPerso,LPosition,PositionOut).
 
-recupPersoListe(Perso,LPerso,LPosition,PositionOut):-findall(X,recupPosition(X,LPerso,LPosition,PositionOut),Perso).
+%Donne la liste des personnages sur une case Position
+recupPersoListe(LPersoOut,LPerso,LPosition,Position):-findall(X,recupPosition(X,LPerso,LPosition,Position),LPersoOut).
 

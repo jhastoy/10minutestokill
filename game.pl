@@ -28,7 +28,7 @@ lancerJeu():-nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,write(
 
     init(LPerso,LPosition),
 
-    write('Ces informations seront présentées sous forme de 2 listes : la première sera la liste des personnages restants, et la deuxième sera leur position, respectivement. Voici les positions initiales des personnages : '),nl,nl,
+    write('Ces informations seront présentées sous forme de 2 listes : la première sera la liste des personnages restants, et la deuxième sera leur position, respectivement.'),nl,write('Voici les positions initiales des personnages : '),nl,nl,
 
     write(LPerso),nl,write(LPosition), nl,nl,
 
@@ -38,26 +38,87 @@ lancerJeu():-nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,write(
     joueur(1,T,X,Y,Z),
     write(X),write(', '),write(Y),write(' et '),write(Z),
 
-    write('. Le tueur que tu diriges est le personnage '), write(T),write('.'),nl.
+    write('. Le tueur que tu diriges est le personnage '), write(T),write('.'),nl,nl,write('Honneur aux humains ! Tu commences.'), nl,nl,
+
+    write('Dernière chose, n\'oublie pas de finir ta ligne par un point quand tu me parles !'),nl,nl,
+    write('Tu es prêt.e ?'),nl,read(_),nl,
+
+    tourATour(LPerso,LPosition).
+
+
+%------------------------Boucle du jeu---------------------
+%Dans un tour, le joueur joue, suivi de l'IA.
+tourATour(LPerso,LPosition):-
+    write('Tu as deux actions possibles : '),nl,
+    write('1 - Déplacer un personnage'),nl,
+    write('2 - Tuer un personnage'),nl,nl,
+    write('Choisis 1 ou 2 : '),nl,
+    read(Action),nl,nl,
+    actionJoueur(Action,LPerso,LPosition,_,_,Reponse),
+    write(Reponse).
+
+
+%---------------------Actions du joueur------------------
+
+actionJoueur(1,LPerso,LPosition,LPerso,LPositionOut,'Déplacé'):-
+    write('Quel personnage veux-tu déplacer ?'),nl,read(P),nl,
+    write('Sur quelle case ?'),nl,read(C),nl,
+    deplacer(P,C,LPerso,LPosition,LPositionOut).
+
+actionJoueur(2,LPerso,LPosition,LPersoOut,LPositionOut,Reponse):-
+
+    write('Quel personnage veux-tu tuer ?'),nl,read(Cible),nl,
+    write('Avec quelle méthode ? Répond couteau, pistolet ou sniper.'),nl,read(Methode),nl,
+
+    joueur(1,Tueur,_,_,_),
+    verificationTuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut,Reponse).
+
+verificationTuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut,'Bravo, tu as réussi ton coup >:}'):-tuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut).
+
+verificationTuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut,Reponse):-
+    not(tuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut)),
+    write('Il est impossible de tuer ce personnage de cette façon ! Réessaye... '),
+    actionJoueur(2,LPerso,LPosition,LPersoOut,LPositionOut,Reponse).
 
 
 
-%--------------------------Commandes de jeu-----------------
 
 
-%Renvoie une liste des cibles atteignable par le joueur
+
+%actionJoueur(2,LPerso,LPosition,LPersoOut,LPositionOut,_):-
+%    write('Quel personnage veux-tu tuer ?'),nl,read(Cible),nl,
+%    write('Avec quelle méthode ? Répond couteau, pistolet ou
+%    sniper.'),nl,read(Methode),nl,
+
+    %joueur(1,Tueur,_,_,_),
+    %not(tuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut)),
+
+    %write('Il est impossible de tuer cette cible de cette façon ! '),
+
+    %actionJoueur(2,LPerso,LPosition,LPersoOut,LPositionOut,_).
+
+
+
+%----------------------- IA choisi la cible ----------------
+
+
+%Renvoie une liste des cibles atteignables par le joueur
 %Echoue si aucune n'est atteignable
-ciblesAtteignables(Joueur,ListeCibles):-init(PersoInit,PositionInit),setof(Cible,verifCiblesAtteignables(Joueur,Cible,PersoInit,PositionInit),ListeCibles).
+ciblesAtteignables(Joueur,LPerso,LPosition,ListeCibles):-setof(Cible,verifCiblesAtteignables(Joueur,Cible,LPerso,LPosition),ListeCibles).
 
-
-verifCiblesAtteignables(Joueur,Cible, PersoInit,PositionInit):-tuer(_,Tueur,Cible,PersoInit,PositionInit,_,_),Cible\==Tueur,joueur(Joueur,Tueur,_,_,_),(joueur(Joueur,_,Cible,_,_);joueur(Joueur,_,_,Cible,_);joueur(Joueur,_,_,_,Cible)).
+% On vérifie que la cible est bien la cible du joueur
+% et qu'elle est atteignable
+verifCiblesAtteignables(Joueur,Cible, PersoInit,PositionInit):-tuer(_,Tueur,Cible,PersoInit,PositionInit,_,_),Cible\==Tueur,joueur(Joueur,Tueur,_,_,_),cible(Cible, Joueur).
 
 
 %------------------Prédicats nécessaires--------------
 
 deplacer(_,_,[],[],[]).
-deplacer(Perso,Position,[_|LPosition], [Perso|LPerso], [Position|LPositionOut]):-deplacer(Perso,Position,LPosition, LPerso,LPositionOut).
-deplacer(Perso,Position,[X|LPosition], [Y|LPerso], [X|LPositionOut]):-Y\==Perso, deplacer(Perso,Position,LPosition, LPerso,LPositionOut).
+deplacer(Perso,Position,[Perso|LPerso],[_|LPosition],[Position|LPositionOut]):-deplacer(Perso,Position,LPerso,LPosition,LPositionOut).
+deplacer(Perso,Position,[Y|LPerso], [X|LPosition], [X|LPositionOut]):-Y\==Perso, deplacer(Perso,Position,LPerso,LPosition,LPositionOut).
+
+
+
 
 cible(Perso,Joueur):- joueur(Joueur,_,Perso,_,_).
 cible(Perso,Joueur):- joueur(Joueur,_,_,Perso,_).

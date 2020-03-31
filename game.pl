@@ -49,18 +49,29 @@ lancerJeu():-nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,write(
 %------------------------Boucle du jeu---------------------
 %Dans un tour, le joueur joue, suivi de l'IA.
 tourATour(LPerso,LPosition):-
-    write('Tu as deux actions possibles : '),nl,
+    write('A ton tour. Tu as deux actions possibles : '),nl,
     write('1 - Déplacer un personnage'),nl,
     write('2 - Tuer un personnage'),nl,nl,
     write('Choisis 1 ou 2 : '),nl,
     read(Action),nl,nl,
-    actionJoueur(Action,LPerso,LPosition,_,_,Reponse),
-    write(Reponse).
+    actionJoueur(Action,LPerso,LPosition,LPerso2,LPosition2,Reponse),
+    write(Reponse),nl,nl,
+
+    write('Voici les nouvelles positions des personnages : '),nl,nl,
+    write(LPerso2),nl,write(LPosition2),nl,nl,
+
+    write('C\'est au tour de l\'IA.'),nl,
+    actionIA(LPerso2,LPosition2,LPersoOut,LPositionOut),
+
+    write('Voici les nouvelles positions des personnages : '),nl,nl,
+    write(LPersoOut),nl,write(LPositionOut),nl,nl,
+
+    tourATour(LPersoOut,LPositionOut).
 
 
 %---------------------Actions du joueur------------------
 
-actionJoueur(1,LPerso,LPosition,LPerso,LPositionOut,'Déplacé'):-
+actionJoueur(1,LPerso,LPosition,LPerso,LPositionOut,'Le personnage a bien été déplacé !'):-
     write('Quel personnage veux-tu déplacer ?'),nl,read(P),nl,
     write('Sur quelle case ?'),nl,read(C),nl,
     deplacer(P,C,LPerso,LPosition,LPositionOut).
@@ -73,7 +84,7 @@ actionJoueur(2,LPerso,LPosition,LPersoOut,LPositionOut,Reponse):-
     joueur(1,Tueur,_,_,_),
     verificationTuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut,Reponse).
 
-verificationTuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut,'Bravo, tu as réussi ton coup >:}'):-tuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut).
+verificationTuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut,'Bravo, tu as réussi ton coup >:}'):-tuer(Methode,Tueur,Cible,LPerso,LPosition,_,_),eliminer(Cible,LPerso,LPosition,LPersoOut,LPositionOut).
 
 verificationTuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut,Reponse):-
     not(tuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut)),
@@ -81,25 +92,14 @@ verificationTuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut,Rep
     actionJoueur(2,LPerso,LPosition,LPersoOut,LPositionOut,Reponse).
 
 
+%---------------------------Actions de l'IA-----------------------------
+%Si pas de cible possible, on fait un déplacement ???
+actionIA(LPerso,LPosition,_,_):-not(ciblesAtteignables(2,LPerso,LPosition,_)),write('L\'IA ne fait rien').
 
+%Si plusieurs cibles possibles, on tue la première.
+actionIA(LPerso,LPosition,LPersoOut,LPositionOut):-ciblesAtteignables(2,LPerso,LPosition,[X|_]),eliminer(X,LPerso,LPosition,LPersoOut,LPositionOut).
 
-
-
-%actionJoueur(2,LPerso,LPosition,LPersoOut,LPositionOut,_):-
-%    write('Quel personnage veux-tu tuer ?'),nl,read(Cible),nl,
-%    write('Avec quelle méthode ? Répond couteau, pistolet ou
-%    sniper.'),nl,read(Methode),nl,
-
-    %joueur(1,Tueur,_,_,_),
-    %not(tuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut)),
-
-    %write('Il est impossible de tuer cette cible de cette façon ! '),
-
-    %actionJoueur(2,LPerso,LPosition,LPersoOut,LPositionOut,_).
-
-
-
-%----------------------- IA choisi la cible ----------------
+%-------------------------- IA choisi la cible ------------------------
 
 
 %Renvoie une liste des cibles atteignables par le joueur
@@ -108,7 +108,7 @@ ciblesAtteignables(Joueur,LPerso,LPosition,ListeCibles):-setof(Cible,verifCibles
 
 % On vérifie que la cible est bien la cible du joueur
 % et qu'elle est atteignable
-verifCiblesAtteignables(Joueur,Cible, PersoInit,PositionInit):-tuer(_,Tueur,Cible,PersoInit,PositionInit,_,_),Cible\==Tueur,joueur(Joueur,Tueur,_,_,_),cible(Cible, Joueur).
+verifCiblesAtteignables(Joueur,Cible, LPerso,LPosition):-tuer(_,Tueur,Cible,LPerso,LPosition,_,_),Cible\==Tueur,joueur(Joueur,Tueur,_,_,_),cible(Cible, Joueur).
 
 
 %------------------Prédicats nécessaires--------------
@@ -132,7 +132,8 @@ eliminer(Perso,[X|LPerso],[Y|LPosition],[X|LPersoOut], [Y|LPositionOut]):- X\==P
 
 %Tuer un personnage avec une certaine méthode
 %Renvoie les 2 listes (position et perso) modifiées
-tuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut) :- recupCoordonnees(Tueur,LPerso,LPosition,(Xt,Yt),CaseTueur,_),recupCoordonnees(Cible,LPerso,LPosition,(Xc,Yc),_,_),action(Methode,LPerso,LPosition,CaseTueur,(Xt,Yt),(Xc,Yc)),eliminer(Cible,LPerso,LPosition,LPersoOut,LPositionOut).
+tuer(Methode,Tueur,Cible,LPerso,LPosition,_,_) :- recupCoordonnees(Tueur,LPerso,LPosition,(Xt,Yt),CaseTueur,_),recupCoordonnees(Cible,LPerso,LPosition,(Xc,Yc),_,_),action(Methode,LPerso,LPosition,CaseTueur,(Xt,Yt),(Xc,Yc)).
+    %eliminer(Cible,LPerso,LPosition,LPersoOut,LPositionOut).
 
 
 action(sniper,LPerso,LPosition,CaseTueur,(Xt,Yt),(Xc,Yc)) :-sniper(LPerso,LPosition,CaseTueur,(Xt,Yt),(Xc,Yc)).

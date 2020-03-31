@@ -1,3 +1,6 @@
+
+%-------------------------Initialisation---------------------
+
 position(16,(4,1),sniper).
 position(15,(3,1),normale).
 position(14,(5,2),sniper).
@@ -20,6 +23,19 @@ joueur(2,b,f,g,h).
 
 init([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p],[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]).
 
+%--------------------------Commandes de jeu-----------------
+
+
+%Renvoie une liste des cibles atteignable par le joueur
+%Echoue si aucune n'est atteignable
+ciblesAtteignables(Joueur,ListeCibles):-init(PersoInit,PositionInit),setof(Cible,verifCiblesAtteignables(Joueur,Cible,PersoInit,PositionInit),ListeCibles).
+
+
+verifCiblesAtteignables(Joueur,Cible, PersoInit,PositionInit):-tuer(_,Tueur,Cible,PersoInit,PositionInit,_,_),Cible\==Tueur,joueur(Joueur,Tueur,_,_,_),(joueur(Joueur,_,Cible,_,_);joueur(Joueur,_,_,Cible,_);joueur(Joueur,_,_,_,Cible)).
+
+
+%------------------Prédicats nécessaires--------------
+
 deplacer(_,_,[],[],[]).
 deplacer(Perso,Position,[_|LPosition], [Perso|LPerso], [Position|LPositionOut]):-deplacer(Perso,Position,LPosition, LPerso,LPositionOut).
 deplacer(Perso,Position,[X|LPosition], [Y|LPerso], [X|LPositionOut]):-Y\==Perso, deplacer(Perso,Position,LPosition, LPerso,LPositionOut).
@@ -34,7 +50,9 @@ eliminer(_,[],[],[],[]).
 eliminer(Perso,[Perso|LPerso],[_|LPosition],LPersoOut,LPositionOut):-eliminer(Perso,LPerso,LPosition,LPersoOut,LPositionOut).
 eliminer(Perso,[X|LPerso],[Y|LPosition],[X|LPersoOut], [Y|LPositionOut]):- X\==Perso, eliminer(Perso,LPerso,LPosition,LPersoOut,LPositionOut).
 
-tuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut) :- recupCoordonnees(Tueur,LPerso,LPosition,(Xt,Yt),CaseTueur,sniper),recupCoordonnees(Cible,LPerso,LPosition,(Xc,Yc),_,_),action(Methode,LPerso,LPosition,CaseTueur,(Xt,Yt),(Xc,Yc)),eliminer(Cible,LPerso,LPosition,LPersoOut,LPositionOut).
+%Tuer un personnage avec une certaine méthode
+%Renvoie les 2 listes (position et perso) modifiées
+tuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut) :- recupCoordonnees(Tueur,LPerso,LPosition,(Xt,Yt),CaseTueur,_),recupCoordonnees(Cible,LPerso,LPosition,(Xc,Yc),_,_),action(Methode,LPerso,LPosition,CaseTueur,(Xt,Yt),(Xc,Yc)),eliminer(Cible,LPerso,LPosition,LPersoOut,LPositionOut).
 
 
 action(sniper,LPerso,LPosition,CaseTueur,(Xt,Yt),(Xc,Yc)) :-sniper(LPerso,LPosition,CaseTueur,(Xt,Yt),(Xc,Yc)).
@@ -42,7 +60,7 @@ action(pistolet,LPerso,LPosition,CaseTueur,(Xt,Yt),(Xc,Yc)) :-pistolet(LPerso,LP
 action(couteau,_,_,_,(Xt,Yt),(Xc,Yc)) :-couteau((Xt,Yt),(Xc,Yc)).
 
 
-sniper(LPerso,LPosition,CaseTueur,(Xt,Yt),(Xc,Yc)):-recupPersoListe(LPersoCaseOut,LPerso,LPosition,CaseTueur),length(LPersoCaseOut,1),testSniper((Xt,Yt),(Xc,Yc)).
+sniper(LPerso,LPosition,CaseTueur,(Xt,Yt),(Xc,Yc)):-recupPersoListe(LPersoCaseOut,LPerso,LPosition,CaseTueur),position(CaseTueur,_,sniper),length(LPersoCaseOut,1),testSniper((Xt,Yt),(Xc,Yc)).
 
 
 testSniper((Xt,_),(Xt,_)).

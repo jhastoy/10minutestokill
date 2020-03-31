@@ -22,6 +22,25 @@ joueur(1,a,c,d,e). %a = tueur, c,d,e = cibles
 joueur(2,b,f,g,h).
 
 init([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p],[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]).
+% ---------------------------Début dujeu-----------------------
+
+lancerJeu():-nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,write('Premièrement, recopie le plateau fourni dans la documentation. Au fur et à mesure du jeu, nous t\'informerons des mises-à-jour concernant la position de chaque personnage.'),nl,nl,
+
+    init(LPerso,LPosition),
+
+    write('Ces informations seront présentées sous forme de 2 listes : la première sera la liste des personnages restants, et la deuxième sera leur position, respectivement. Voici les positions initiales des personnages : '),nl,nl,
+
+    write(LPerso),nl,write(LPosition), nl,nl,
+
+    write('Le personnage a est donc sur la case 1.'),nl,nl,
+
+    write('Tu es le joueur 1. Tes cibles sont les personnages '),
+    joueur(1,T,X,Y,Z),
+    write(X),write(', '),write(Y),write(' et '),write(Z),
+
+    write('. Le tueur que tu diriges est le personnage '), write(T),write('.'),nl.
+
+
 
 %--------------------------Commandes de jeu-----------------
 

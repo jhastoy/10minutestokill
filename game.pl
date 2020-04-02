@@ -69,8 +69,13 @@ tourATour(LPerso,LPosition,1,Gagnant):-
 
 
     write('C\'est au tour de l\'IA.'),nl,
-    actionIA(LPerso3,LPosition3,LPersoOut,LPositionOut),
+    actionIA(LPerso3,LPosition3,LPerso4,LPosition4,1),
 
+    write('Voici les nouvelles positions des personnages : '),nl,nl,
+    write(LPerso4),nl,write(LPosition4),nl,nl,
+
+    actionIA(LPerso4,LPosition4,LPersoOut,LPositionOut,2),
+    
     write('Voici les nouvelles positions des personnages : '),nl,nl,
     write(LPersoOut),nl,write(LPositionOut),nl,nl,
     verifEndGame(EndGame,Gagnant,LPersoOut),
@@ -85,7 +90,7 @@ choixAction(1,LPerso,LPosition,LPerso2,LPosition2):- write('1 - Deplacer un pers
     actionJoueur(Action,LPerso,LPosition,LPerso2,LPosition2,Reponse),
     write(Reponse),nl,nl.
 
-choixAction(2,LPerso,LPosition,LPerso2,LPosition2):- actionJoueur(1,LPerso,LPosition,LPerso2,LPosition2,Reponse).
+choixAction(2,LPerso,LPosition,LPerso2,LPosition2):- actionJoueur(1,LPerso,LPosition,LPerso2,LPosition2,Reponse),write(Reponse),nl,nl.
 
 verifEndGame(1,_,LPerso):- joueur(1,_,X,Y,Z),listeVivant([X,Y,Z],LPerso,LPersoVivantOut),not(length(LPersoVivantOut,0)),
 joueur(2,_,A,B,C),listeVivant([A,B,C],LPerso,LPersoVivantOut2),not(length(LPersoVivantOut2,0)).
@@ -125,15 +130,16 @@ verificationTuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut,Rep
 
 %---------------------------Actions de l'IA-----------------------------
 %Si pas de cible possible, on fait un deplacement ???
-actionIA(LPerso,LPosition,LPerso,LPositionOut):-not(ciblesAtteignables(2,LPerso,LPosition,_)),joueur(2,Tueur,_,_,_),recupPosition(Tueur,LPerso,LPosition,Case),
+actionIA(LPerso,LPosition,LPerso,LPositionOut,_):-write('action _'),not(ciblesAtteignables(2,LPerso,LPosition,_)),joueur(2,Tueur,_,_,_),recupPosition(Tueur,LPerso,LPosition,Case),
 CaseSuivante is Case+1, deplacer(Tueur,CaseSuivante,LPerso,LPosition,LPositionOut),write('L\'IA a deplace '),write(Tueur),write(' en '),write(CaseSuivante),nl.
 
 %Si plusieurs cibles possibles, on tue la premiere.
-actionIA(LPerso,LPosition,LPersoOut,LPositionOut):-ciblesAtteignables(2,LPerso,LPosition,[X|_]),eliminer(X,LPerso,LPosition,LPersoOut,LPositionOut),write('L\'IA a tue '),write(X),nl.
+actionIA(LPerso,LPosition,LPersoOut,LPositionOut,1):-write('action tuer'),ciblesAtteignables(2,LPerso,LPosition,[X|_]),eliminer(X,LPerso,LPosition,LPersoOut,LPositionOut),write('L\'IA a tue '),write(X),nl.
+
+actionIA(LPerso,LPosition,LPerso,LPositionOut,2):-write('action déplacer'),joueur(2,Tueur,_,_,_),recupPosition(Tueur,LPerso,LPosition,Case),
+CaseSuivante is Case+1, deplacer(Tueur,CaseSuivante,LPerso,LPosition,LPositionOut),write('L\'IA a deplace '),write(Tueur),write(' en '),write(CaseSuivante),nl,nl.
 
 %-------------------------- IA choisi la cible ------------------------
-
-
 %Renvoie une liste des cibles atteignables par le joueur
 %Echoue si aucune n'est atteignable
 ciblesAtteignables(Joueur,LPerso,LPosition,ListeCibles):-setof(Cible,verifCiblesAtteignables(Joueur,Cible,LPerso,LPosition),ListeCibles).

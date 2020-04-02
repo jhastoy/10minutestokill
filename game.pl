@@ -22,13 +22,13 @@ joueur(1,a,c,d,e). %a = tueur, c,d,e = cibles
 joueur(2,b,f,g,h).
 
 init([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p],[1,2,4,4,4,6,7,8,9,10,11,12,13,14,15,16]).
-% ---------------------------D�but dujeu-----------------------
+% ---------------------------Debut dujeu-----------------------
 
-lancerJeu():-nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,write('Premi�rement, recopie le plateau fourni dans la documentation. Au fur et � mesure du jeu, nous t\'informerons des mises-�-jour concernant la position de chaque personnage.'),nl,nl,
+lancerJeu():-nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,write('Premierement, recopie le plateau fourni dans la documentation. Au fur et e mesure du jeu, nous t\'informerons des mises-e-jour concernant la position de chaque personnage.'),nl,nl,
 
     init(LPerso,LPosition),
 
-    write('Ces informations seront pr�sent�es sous forme de 2 listes : la premi�re sera la liste des personnages restants, et la deuxi�me sera leur position, respectivement.'),nl,write('Voici les positions initiales des personnages : '),nl,nl,
+    write('Ces informations seront presentees sous forme de 2 listes : la premiere sera la liste des personnages restants, et la deuxieme sera leur position, respectivement.'),nl,write('Voici les positions initiales des personnages : '),nl,nl,
 
     write(LPerso),nl,write(LPosition), nl,nl,
 
@@ -40,8 +40,8 @@ lancerJeu():-nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,write(
 
     write('. Le tueur que tu diriges est le personnage '), write(T),write('.'),nl,nl,write('Honneur aux humains ! Tu commences.'), nl,nl,
 
-    write('Derni�re chose, n\'oublie pas de finir ta ligne par un point quand tu me parles !'),nl,nl,
-    write('Tu es pr�t.e ?'),nl,read(_),nl,
+    write('Derniere chose, n\'oublie pas de finir ta ligne par un point quand tu me parles !'),nl,nl,
+    write('Tu es pret.e ?'),nl,read(_),nl,
     
     tourATour(LPerso,LPosition,1,_).
 
@@ -51,7 +51,7 @@ lancerJeu():-nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,write(
 
 tourATour(LPerso,LPosition,1,Gagnant):-
     write('A ton tour. Tu as deux actions possibles : '),nl,
-    write('1 - D�placer un personnage'),nl,
+    write('1 - Deplacer un personnage'),nl,
     write('2 - Tuer un personnage'),nl,nl,
     write('Choisis 1 ou 2 : '),nl,
     read(Action),nl,nl,
@@ -61,18 +61,34 @@ tourATour(LPerso,LPosition,1,Gagnant):-
     write('Voici les nouvelles positions des personnages : '),nl,nl,
     write(LPerso2),nl,write(LPosition2),nl,nl,
 
+    write('Deuxieme action :'),nl,nl,
+    choixAction(Action,LPerso2,LPosition2,LPerso3,LPosition3),
+
+    write('Voici les nouvelles positions des personnages : '),nl,nl,
+    write(LPerso3),nl,write(LPosition3),nl,nl,
+
+
     write('C\'est au tour de l\'IA.'),nl,
-    actionIA(LPerso2,LPosition2,LPersoOut,LPositionOut),
+    actionIA(LPerso3,LPosition3,LPersoOut,LPositionOut),
 
     write('Voici les nouvelles positions des personnages : '),nl,nl,
     write(LPersoOut),nl,write(LPositionOut),nl,nl,
     verifEndGame(EndGame,Gagnant,LPersoOut),
     tourATour(LPersoOut,LPositionOut,EndGame,Gagnant).
 
-tourAtour(_,_,2,Gagnant):- write('Fin du jeu, le gagnant est joueur '),write(Gagnant).
+tourATour(_,_,2,Gagnant):- write('Fin du jeu, le gagnant est joueur '),write(Gagnant).
 
-verifEndGame(1,Gagnant,LPerso):- joueur(1,_,X,Y,Z),listeVivant([X,Y,Z],LPerso,LPersoVivantOut),not(length(LPersoVivantOut,0)),
-joueur(2,_,A,B,C),listeVivant([A,B,C],LPerso,LPersoVivantOut),not(length(LPersoVivantOut,0)).
+choixAction(1,LPerso,LPosition,LPerso2,LPosition2):- write('1 - Deplacer un personnage'),nl,
+    write('2 - Tuer un personnage'),nl,nl,
+    write('Choisis 1 ou 2 : '),nl,
+    read(Action),nl,nl,
+    actionJoueur(Action,LPerso,LPosition,LPerso2,LPosition2,Reponse),
+    write(Reponse),nl,nl.
+
+choixAction(2,LPerso,LPosition,LPerso2,LPosition2):- actionJoueur(1,LPerso,LPosition,LPerso2,LPosition2,Reponse).
+
+verifEndGame(1,_,LPerso):- joueur(1,_,X,Y,Z),listeVivant([X,Y,Z],LPerso,LPersoVivantOut),not(length(LPersoVivantOut,0)),
+joueur(2,_,A,B,C),listeVivant([A,B,C],LPerso,LPersoVivantOut2),not(length(LPersoVivantOut2,0)).
 
 verifEndGame(2,1,LPerso):- joueur(1,_,X,Y,Z),listeVivant([X,Y,Z],LPerso,LPersoVivantOut),length(LPersoVivantOut,0).
 verifEndGame(2,2,LPerso):- joueur(2,_,X,Y,Z),listeVivant([X,Y,Z],LPerso,LPersoVivantOut),length(LPersoVivantOut,0).
@@ -86,34 +102,34 @@ listeVivant([P|LCible],LPerso,LPersoVivant):- not(memberchk(P,LPerso)),listeViva
 
 %---------------------Actions du joueur------------------
 
-actionJoueur(1,LPerso,LPosition,LPerso,LPositionOut,'Le personnage a bien �t� d�plac� !'):-
-    write('Quel personnage veux-tu d�placer ?'),nl,read(P),nl,
+actionJoueur(1,LPerso,LPosition,LPerso,LPositionOut,'Le personnage a bien ete deplace !'):-
+    write('Quel personnage veux-tu deplacer ?'),nl,read(P),nl,
     write('Sur quelle case ?'),nl,read(C),nl,
     deplacer(P,C,LPerso,LPosition,LPositionOut).
 
 actionJoueur(2,LPerso,LPosition,LPersoOut,LPositionOut,Reponse):-
 
     write('Quel personnage veux-tu tuer ?'),nl,read(Cible),nl,
-    write('Avec quelle m�thode ? R�pond couteau, pistolet ou sniper.'),nl,read(Methode),nl,
+    write('Avec quelle methode ? Repond couteau, pistolet ou sniper.'),nl,read(Methode),nl,
 
     joueur(1,Tueur,_,_,_),
     verificationTuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut,Reponse).
 
-verificationTuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut,'Bravo, tu as r�ussi ton coup >:}'):-tuer(Methode,Tueur,Cible,LPerso,LPosition,_,_),eliminer(Cible,LPerso,LPosition,LPersoOut,LPositionOut).
+verificationTuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut,'Bravo, tu as reussi ton coup >:}'):-tuer(Methode,Tueur,Cible,LPerso,LPosition,_,_),eliminer(Cible,LPerso,LPosition,LPersoOut,LPositionOut).
 
 verificationTuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut,Reponse):-
     not(tuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut)),
-    write('Il est impossible de tuer ce personnage de cette fa�on ! R�essaye... '),
+    write('Il est impossible de tuer ce personnage de cette faeon ! Reessaye... '),
     actionJoueur(2,LPerso,LPosition,LPersoOut,LPositionOut,Reponse).
 
 
 %---------------------------Actions de l'IA-----------------------------
-%Si pas de cible possible, on fait un d�placement ???
-actionIA(LPerso,LPosition,LPerso,LPositionOut):-not(ciblesAtteignables(2,LPerso,LPosition,_)),joueur(1,Tueur,_,_,_),recupPosition(Tueur,LPerso,LPosition,Case),
-CaseSuivante is Case+1, deplacer(Tueur,CaseSuivante,LPerso,LPosition,LPositionOut),write('L\'IA a déplacé '),write(Tueur),write(' en '),write(CaseSuivante),nl.
+%Si pas de cible possible, on fait un deplacement ???
+actionIA(LPerso,LPosition,LPerso,LPositionOut):-not(ciblesAtteignables(2,LPerso,LPosition,_)),joueur(2,Tueur,_,_,_),recupPosition(Tueur,LPerso,LPosition,Case),
+CaseSuivante is Case+1, deplacer(Tueur,CaseSuivante,LPerso,LPosition,LPositionOut),write('L\'IA a deplace '),write(Tueur),write(' en '),write(CaseSuivante),nl.
 
-%Si plusieurs cibles possibles, on tue la premi�re.
-actionIA(LPerso,LPosition,LPersoOut,LPositionOut):-ciblesAtteignables(2,LPerso,LPosition,[X|_]),eliminer(X,LPerso,LPosition,LPersoOut,LPositionOut),write('L\'IA a tué '),write(X),nl.
+%Si plusieurs cibles possibles, on tue la premiere.
+actionIA(LPerso,LPosition,LPersoOut,LPositionOut):-ciblesAtteignables(2,LPerso,LPosition,[X|_]),eliminer(X,LPerso,LPosition,LPersoOut,LPositionOut),write('L\'IA a tue '),write(X),nl.
 
 %-------------------------- IA choisi la cible ------------------------
 
@@ -122,19 +138,16 @@ actionIA(LPerso,LPosition,LPersoOut,LPositionOut):-ciblesAtteignables(2,LPerso,L
 %Echoue si aucune n'est atteignable
 ciblesAtteignables(Joueur,LPerso,LPosition,ListeCibles):-setof(Cible,verifCiblesAtteignables(Joueur,Cible,LPerso,LPosition),ListeCibles).
 
-% On v�rifie que la cible est bien la cible du joueur
+% On verifie que la cible est bien la cible du joueur
 % et qu'elle est atteignable
 verifCiblesAtteignables(Joueur,Cible, LPerso,LPosition):-tuer(_,Tueur,Cible,LPerso,LPosition,_,_),Cible\==Tueur,joueur(Joueur,Tueur,_,_,_),cible(Cible, Joueur).
 
 
-%------------------Pr�dicats n�cessaires--------------
+%------------------Predicats necessaires--------------
 
 deplacer(_,_,[],[],[]).
 deplacer(Perso,Position,[Perso|LPerso],[_|LPosition],[Position|LPositionOut]):-deplacer(Perso,Position,LPerso,LPosition,LPositionOut).
 deplacer(Perso,Position,[Y|LPerso], [X|LPosition], [X|LPositionOut]):-Y\==Perso, deplacer(Perso,Position,LPerso,LPosition,LPositionOut).
-
-
-
 
 cible(Perso,Joueur):- joueur(Joueur,_,Perso,_,_).
 cible(Perso,Joueur):- joueur(Joueur,_,_,Perso,_).
@@ -146,8 +159,8 @@ eliminer(_,[],[],[],[]).
 eliminer(Perso,[Perso|LPerso],[_|LPosition],LPersoOut,LPositionOut):-eliminer(Perso,LPerso,LPosition,LPersoOut,LPositionOut).
 eliminer(Perso,[X|LPerso],[Y|LPosition],[X|LPersoOut], [Y|LPositionOut]):- X\==Perso, eliminer(Perso,LPerso,LPosition,LPersoOut,LPositionOut).
 
-%Tuer un personnage avec une certaine m�thode
-%Renvoie les 2 listes (position et perso) modifi�es
+%Tuer un personnage avec une certaine methode
+%Renvoie les 2 listes (position et perso) modifiees
 tuer(Methode,Tueur,Cible,LPerso,LPosition,_,_) :- recupCoordonnees(Tueur,LPerso,LPosition,(Xt,Yt),CaseTueur,_),recupCoordonnees(Cible,LPerso,LPosition,(Xc,Yc),_,_),action(Methode,LPerso,LPosition,CaseTueur,(Xt,Yt),(Xc,Yc)).
     %eliminer(Cible,LPerso,LPosition,LPersoOut,LPositionOut).
 

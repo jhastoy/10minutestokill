@@ -1,28 +1,72 @@
 
 %-------------------------Initialisation---------------------
-
-position(16,(4,1),sniper).
-position(15,(3,1),normale).
-position(14,(5,2),sniper).
-position(13,(4,2),normale).
-position(12,(3,2),sniper).
-position(11,(2,2),sniper).
+position(30,(5,2),vide).
+position(29,(4,2),vide).
+position(28,(3,2),sniper).
+position(27,(2,2),normale).
+position(26,(6,3),vide).
+position(25,(5,3),vide).
+position(24,(4,3),vide).
+position(23,(2,3),sniper).
+position(22,(1,3),normale).
+position(21,(6,4),sniper).
+position(20,(4,4),sniper).
+position(19,(3,4),vide).
+position(18,(2,4),sniper).
+position(17,(4,5),normale).
+position(16,(4,1),normale).
+position(15,(3,1),vide).
+position(14,(5,2),normale).
+position(13,(4,2),sniper).
+position(12,(3,2),normale).
+position(11,(2,2),vide).
 position(10,(6,3),sniper).
 position(9,(5,3),normale).
 position(8,(4,3),normale).
-position(7,(2,3),normale).
-position(6,(1,3),sniper).
-position(5,(6,4),normale).
+position(7,(2,3),vide).
+position(6,(1,3),vide).
+position(5,(6,4),vide).
 position(4,(4,4),sniper).
-position(3,(3,4),normale).
-position(2,(2,4),normale).
-position(1,(4,5),sniper).
+position(3,(3,4),vide).
+position(2,(2,4),vide).
+position(1,(4,5),vide).
 
 joueur(1,a,c,d,e). %a = tueur, c,d,e = cibles
 joueur(2,b,f,g,h).
 
-init([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p],[1,2,4,4,4,6,7,8,9,10,11,12,13,14,15,16]).
+
+positions([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30]).
+init([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p],[4,8,9,10,12,13,14,16,17,18,20,21,22,23,27,28]).
+%-----------------------------Affichage--------------------------
+
+
+retourLigne(X,XOut,Ligne,LigneOut):-Y is X mod 6,  Y\=0 , XOut is X+1, LigneOut is Ligne.
+retourLigne(X,XOut,Ligne,LigneOut):- Y is X mod 6,  Y==0 ,Ligne \= 4, LigneOut is Ligne +1,XOut is X-5,nl.
+retourLigne(X,XOut,Ligne,LigneOut):- Y is X mod 6, Y==0, Ligne == 4, LigneOut is 1,XOut is X+1, nl.
+
+
+affichePersoLigne(LPerso,LPosition,Position,Ligne):-Ligne\=2, espaces(21).
+
+affichePersoLigne(LPerso,LPosition,Position,Ligne):-Ligne==2,recupPersoListe(Persos,LPerso,LPosition,Position),length(Persos,L), L \=0, write(Persos),espaces(21-(2*L+1)).
+affichePersoLigne(LPerso,LPosition,Position,Ligne):- Ligne==2,recupPersoListe(Persos,LPerso,LPosition,Position),length(Persos,L), L == 0,espaces(21).
+
+
+
+affiche(31,LPerso,LPosition,Ligne).
+affiche(X,LPerso,LPosition,Ligne):-Ligne \=4, position(X,_,normale),write("|  "),affichePersoLigne(LPerso,LPosition,X,Ligne),write("  | "),retourLigne(X,XOut,Ligne,LigneOut),affiche(XOut,LPerso,LPosition,LigneOut).
+affiche(X,LPerso,LPosition,Ligne):-Ligne \=4, position(X,_,sniper),write("|- "),affichePersoLigne(LPerso,LPosition,X,Ligne),write(" -| "),retourLigne(X,XOut,Ligne,LigneOut),affiche(XOut,LPerso,LPosition,LigneOut).
+affiche(X,LPerso,LPosition,Ligne):-Ligne \=4, position(X,_,vide),write("   "),affichePersoLigne(LPerso,LPosition,X,Ligne),write("    "),retourLigne(X,XOut,Ligne,LigneOut),affiche(XOut,LPerso,LPosition,LigneOut).
+
+
+affiche(X,LPerso,LPosition,Ligne):-Ligne == 4,write("--------------------------"), retourLigne(X,XOut,Ligne,LigneOut),affiche(XOut,LPerso,LPosition,LigneOut).
+
+
+espaces(0).
+espaces(X):- write(" "),Y is X-1,espaces(Y).
+
 % ---------------------------Debut dujeu-----------------------
+
+
 
 lancerJeu():-nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,write('Premierement, recopie le plateau fourni dans la documentation. Au fur et e mesure du jeu, nous t\'informerons des mises-e-jour concernant la position de chaque personnage.'),nl,nl,
 
@@ -30,8 +74,7 @@ lancerJeu():-nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,write(
 
     write('Ces informations seront presentees sous forme de 2 listes : la premiere sera la liste des personnages restants, et la deuxieme sera leur position, respectivement.'),nl,write('Voici les positions initiales des personnages : '),nl,nl,
 
-    write(LPerso),nl,write(LPosition), nl,nl,
-
+    affiche(1,LPerso,LPosition,1),
     write('Le personnage a est donc sur la case 1.'),nl,nl,
 
     write('Tu es le joueur 1. Tes cibles sont les personnages '),
@@ -49,6 +92,7 @@ lancerJeu():-nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,write(
 %------------------------Boucle du jeu---------------------
 %Dans un tour, le joueur joue, suivi de l'IA.
 
+
 tourATour(LPerso,LPosition,1,Gagnant):-
     write('A ton tour. Tu as deux actions possibles : '),nl,
     write('1 - Deplacer un personnage'),nl,
@@ -58,6 +102,7 @@ tourATour(LPerso,LPosition,1,Gagnant):-
     actionJoueur(Action,LPerso,LPosition,LPerso2,LPosition2,Reponse),
     write(Reponse),nl,nl,
 
+    affiche(1,LPerso2,LPosition2,1),
     write('Voici les nouvelles positions des personnages : '),nl,nl,
     write(LPerso2),nl,write(LPosition2),nl,nl,
 
@@ -65,23 +110,23 @@ tourATour(LPerso,LPosition,1,Gagnant):-
     choixAction(Action,LPerso2,LPosition2,LPerso3,LPosition3),
 
     write('Voici les nouvelles positions des personnages : '),nl,nl,
-    write(LPerso3),nl,write(LPosition3),nl,nl,
+        affiche(1,LPerso3,LPosition3,1),
+
 
 
     write('C\'est au tour de l\'IA.'),nl,
     actionIA(LPerso3,LPosition3,LPerso4,LPosition4,1),
 
     write('Voici les nouvelles positions des personnages : '),nl,nl,
-    write(LPerso4),nl,write(LPosition4),nl,nl,
-
+        affiche(1,LPerso4,LPosition4,1),
     actionIA(LPerso4,LPosition4,LPersoOut,LPositionOut,2),
-    
     write('Voici les nouvelles positions des personnages : '),nl,nl,
-    write(LPersoOut),nl,write(LPositionOut),nl,nl,
+        affiche(1,LPersoOut,LPositionOut,1),
+,nl,nl,
     verifEndGame(EndGame,Gagnant,LPersoOut),
     tourATour(LPersoOut,LPositionOut,EndGame,Gagnant).
 
-tourATour(_,_,2,Gagnant):- write('Fin du jeu, le gagnant est joueur '),write(Gagnant).
+tourATour(_,_,_,2,Gagnant):- write('Fin du jeu, le gagnant est joueur '),write(Gagnant).
 
 choixAction(1,LPerso,LPosition,LPerso2,LPosition2):- write('1 - Deplacer un personnage'),nl,
     write('2 - Tuer un personnage'),nl,nl,

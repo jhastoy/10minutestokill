@@ -45,14 +45,14 @@ retourLigne(X,XOut,Ligne,LigneOut):- Y is X mod 6,  Y==0 ,Ligne \= 4, LigneOut i
 retourLigne(X,XOut,Ligne,LigneOut):- Y is X mod 6, Y==0, Ligne == 4, LigneOut is 1,XOut is X+1, nl.
 
 
-affichePersoLigne(LPerso,LPosition,Position,Ligne):-Ligne\=2, espaces(21).
+affichePersoLigne(_,_,_,Ligne):-Ligne\=2, espaces(21).
 
 affichePersoLigne(LPerso,LPosition,Position,Ligne):-Ligne==2,recupPersoListe(Persos,LPerso,LPosition,Position),length(Persos,L), L \=0, write(Persos),espaces(21-(2*L+1)).
 affichePersoLigne(LPerso,LPosition,Position,Ligne):- Ligne==2,recupPersoListe(Persos,LPerso,LPosition,Position),length(Persos,L), L == 0,espaces(21).
 
 
 
-affiche(31,LPerso,LPosition,Ligne).
+affiche(31,_,_,_).
 affiche(X,LPerso,LPosition,Ligne):-Ligne \=4, position(X,_,normale),write("|  "),affichePersoLigne(LPerso,LPosition,X,Ligne),write("  | "),retourLigne(X,XOut,Ligne,LigneOut),affiche(XOut,LPerso,LPosition,LigneOut).
 affiche(X,LPerso,LPosition,Ligne):-Ligne \=4, position(X,_,sniper),write("|- "),affichePersoLigne(LPerso,LPosition,X,Ligne),write(" -| "),retourLigne(X,XOut,Ligne,LigneOut),affiche(XOut,LPerso,LPosition,LigneOut).
 affiche(X,LPerso,LPosition,Ligne):-Ligne \=4, position(X,_,vide),write("   "),affichePersoLigne(LPerso,LPosition,X,Ligne),write("    "),retourLigne(X,XOut,Ligne,LigneOut),affiche(XOut,LPerso,LPosition,LigneOut).
@@ -68,11 +68,15 @@ espaces(X):- write(" "),Y is X-1,espaces(Y).
 
 
 
-lancerJeu():-nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,write('Premierement, recopie le plateau fourni dans la documentation. Au fur et e mesure du jeu, nous t\'informerons des mises-e-jour concernant la position de chaque personnage.'),nl,nl,
+lancerJeu():-nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,
+
+    %write('Premierement, recopie le plateau fourni dans la documentation. Au fur et e mesure du jeu, nous t\'informerons des mises-e-jour concernant la position de chaque personnage.'),nl,nl,
 
     init(LPerso,LPosition),
 
-    write('Ces informations seront presentees sous forme de 2 listes : la premiere sera la liste des personnages restants, et la deuxieme sera leur position, respectivement.'),nl,write('Voici les positions initiales des personnages : '),nl,nl,
+    %write('Ces informations seront presentees sous forme de 2 listes : la premiere sera la liste des personnages restants, et la deuxieme sera leur position, respectivement.'),nl,
+
+    write('Voici les positions initiales des personnages : '),nl,nl,
 
     affiche(1,LPerso,LPosition,1),
     write('Le personnage a est donc sur la case 1.'),nl,nl,
@@ -85,7 +89,7 @@ lancerJeu():-nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,write(
 
     write('Derniere chose, n\'oublie pas de finir ta ligne par un point quand tu me parles !'),nl,nl,
     write('Tu es pret.e ?'),nl,read(_),nl,
-    
+
     tourATour(LPerso,LPosition,1,_).
 
 
@@ -102,9 +106,10 @@ tourATour(LPerso,LPosition,1,Gagnant):-
     actionJoueur(Action,LPerso,LPosition,LPerso2,LPosition2,Reponse),
     write(Reponse),nl,nl,
 
-    affiche(1,LPerso2,LPosition2,1),
     write('Voici les nouvelles positions des personnages : '),nl,nl,
-    write(LPerso2),nl,write(LPosition2),nl,nl,
+    affiche(1,LPerso2,LPosition2,1),
+
+    %write(LPerso2),nl,write(LPosition2),nl,nl,
 
     write('Deuxieme action :'),nl,nl,
     choixAction(Action,LPerso2,LPosition2,LPerso3,LPosition3),
@@ -121,12 +126,11 @@ tourATour(LPerso,LPosition,1,Gagnant):-
         affiche(1,LPerso4,LPosition4,1),
     actionIA(LPerso4,LPosition4,LPersoOut,LPositionOut,2),
     write('Voici les nouvelles positions des personnages : '),nl,nl,
-        affiche(1,LPersoOut,LPositionOut,1),
-,nl,nl,
+        affiche(1,LPersoOut,LPositionOut,1),nl,nl,
     verifEndGame(EndGame,Gagnant,LPersoOut),
     tourATour(LPersoOut,LPositionOut,EndGame,Gagnant).
 
-tourATour(_,_,_,2,Gagnant):- write('Fin du jeu, le gagnant est joueur '),write(Gagnant).
+tourATour(_,_,2,Gagnant):- write('Fin du jeu, le gagnant est joueur '),write(Gagnant).
 
 choixAction(1,LPerso,LPosition,LPerso2,LPosition2):- write('1 - Deplacer un personnage'),nl,
     write('2 - Tuer un personnage'),nl,nl,
@@ -154,22 +158,42 @@ listeVivant([P|LCible],LPerso,LPersoVivant):- not(memberchk(P,LPerso)),listeViva
 
 actionJoueur(1,LPerso,LPosition,LPerso,LPositionOut,'Le personnage a bien ete deplace !'):-
     write('Quel personnage veux-tu deplacer ?'),nl,read(P),nl,
+    personnageValable(P,LPerso),
     write('Sur quelle case ?'),nl,read(C),nl,
-    deplacer(P,C,LPerso,LPosition,LPositionOut).
+    verificationDeplacer(P,C,LPerso,LPosition,LPerso,LPositionOut,'Le personnage a bien ete deplace !').
 
 actionJoueur(2,LPerso,LPosition,LPersoOut,LPositionOut,Reponse):-
-
     write('Quel personnage veux-tu tuer ?'),nl,read(Cible),nl,
+    personnageValable(Cible,LPerso),
     write('Avec quelle methode ? Repond couteau, pistolet ou sniper.'),nl,read(Methode),nl,
 
     joueur(1,Tueur,_,_,_),
     verificationTuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut,Reponse).
 
+% Si on a eu false sur un actionJoueur, c'est forcément a cause %de personnageValable. Donc :
+
+actionJoueur(X,LPerso,LPosition,LPersoOut,LPositionOut,Reponse):-
+    write('Le personnage que tu as choisi n\'est pas un personnage, ou alors il a deja ete elimine... Choisis-en un autre.'),nl,
+    actionJoueur(X,LPerso,LPosition,LPersoOut,LPositionOut,Reponse).
+
+verificationDeplacer(Perso,Case,LPerso,LPosition,_,LPositionOut,_):-
+    caseValable(Case),
+    deplacer(Perso,Case,LPerso,LPosition,LPositionOut).
+
+verificationDeplacer(_,Case,LPerso,LPosition,LPersoOut,LPositionOut,Reponse):-
+    not(caseValable(Case)),
+    write('La case que tu as choisi n\'est pas une case'),
+    actionJoueur(1,LPerso,LPosition,LPersoOut,LPositionOut,Reponse).
+
+
+verificationTuer(Methode,_,_,LPerso,LPosition,LPersoOut,LPositionOut,Reponse):-Methode\=='sniper',Methode\=='pistolet',Methode\=='couteau',
+    write('Ta reponse n\'est pas une des reponses possibles... Verifie l\'orthographe !  '),actionJoueur(2,LPerso,LPosition,LPersoOut,LPositionOut,Reponse).
+
 verificationTuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut,'Bravo, tu as reussi ton coup >:}'):-tuer(Methode,Tueur,Cible,LPerso,LPosition,_,_),eliminer(Cible,LPerso,LPosition,LPersoOut,LPositionOut).
 
 verificationTuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut,Reponse):-
     not(tuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut)),
-    write('Il est impossible de tuer ce personnage de cette faeon ! Reessaye... '),
+    write('Il est impossible de tuer ce personnage de cette facon ! Reessaye... '),
     actionJoueur(2,LPerso,LPosition,LPersoOut,LPositionOut,Reponse).
 
 
@@ -192,6 +216,19 @@ ciblesAtteignables(Joueur,LPerso,LPosition,ListeCibles):-setof(Cible,verifCibles
 % On verifie que la cible est bien la cible du joueur
 % et qu'elle est atteignable
 verifCiblesAtteignables(Joueur,Cible, LPerso,LPosition):-tuer(_,Tueur,Cible,LPerso,LPosition,_,_),Cible\==Tueur,joueur(Joueur,Tueur,_,_,_),cible(Cible, Joueur).
+
+% ----------------------Tolerance à l'erreur---------------------------
+%Vérifie que c'est une case, et qu'elle est non vide
+caseValable(Input):-integer(Input),position(Input,_,X),X\=='vide'.
+
+
+
+%Vérifie que c'est un personnage et qu'il est vivant
+personnageValable(Input,LPerso):-atom(Input),atom_chars(Input,ListInput),length(ListInput,1),memberchk(Input,LPerso).
+
+% personnageValable(Input,LPerso):-write('Ce n\'est pas un personnage, ou
+% alors il a deja ete elimine... Choisis-en un autre.'),nl.
+
 
 
 %------------------Predicats necessaires--------------

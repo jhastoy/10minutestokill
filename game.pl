@@ -34,10 +34,6 @@ attributionPerso():-randomPerso([A,B,C,D,E,F,G,H],[a,b,c,d,e,f,g,h,i,j,k,l,m,n,o
 
 %---------------Generation aleatoire plateau-------------------
 
-%randomEtat([],_,Compteur):- write(Compteur).
-%randomEtat([E|LE],LEtat,Compteur):- Compteur =< 16,random_member(E,LEtat),E \= vide, Compteur is Compteur +1,randomEtat(LE,LEtat,Compteur).
-%randomEtat([vide|LE],LEtat,Compteur):- Compteur =< 16,randomEtat(LE,LEtat,Compteur).
-%randomEtat([E|LE],LEtat,Compteur):- Compteur > 16,delete(LEtat,normale,LEtat2),Compteur is Compteur + 1,random_member(E,LEtat2),randomEtat(LE,LEtat2,Compteur).
 
 randomEtat([],_).
 randomEtat([E|LE],LEtat):- random_member(E,LEtat),randomEtat(LE,LEtat).

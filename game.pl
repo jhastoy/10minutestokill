@@ -21,8 +21,9 @@ init([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p],[4,8,9,10,12,13,14,16,17,18,20,21,22,23,2
 
 
 initListePosition([],_,16).
-initListePosition([P|LPositions],[P|positions],Compteur):- position(P,_,X),X \= vide,Compteur is Compteur+1, write(Compteur),initListePosition(LPositions,positions,Compteur).
-initListePosition(LPositions,[P|positions],Compteur):- position(P,_,X),X == vide,initListePosition(LPositions,positions,Compteur).
+initListePosition([P|LPositions],[P|LPositionInit],Compteur):- position(P,_,X),X \== vide, Compteur2 is Compteur+1,initListePosition(LPositions,LPositionInit,Compteur2).
+initListePosition(LPositions,[P|LPositionInit],Compteur):- position(P,_,X),initListePosition(LPositions,LPositionInit,Compteur).
+
 
 %-----------------Attribution al�atoire des personnages-------
 
@@ -135,14 +136,14 @@ lancerJeu():-
     listing(position),nl,
     write('ini liste'),
     initListePosition(LPosition,LPositionInit,0),
-
+    write(LPosition),
 
     %write('Ces informations seront presentees sous forme de 2 listes : la premiere sera la liste des personnages restants, et la deuxieme sera leur position, respectivement.'),nl,
 
     write('Voici les positions initiales des personnages : '),nl,nl,
 
     affiche(1,LPerso,LPosition,0),
-    write('Le personnage a est donc sur la case 1.'),nl,nl,
+    %write('Le personnage a est donc sur la case 1.'),nl,nl,
 
     %listing(joueur),nl,nl,
 

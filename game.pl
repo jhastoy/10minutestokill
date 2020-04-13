@@ -22,7 +22,7 @@ init([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p],[4,8,9,10,12,13,14,16,17,18,20,21,22,23,2
 
 initListePosition([],_,16).
 initListePosition([P|LPositions],[P|LPositionInit],Compteur):- position(P,_,X),X \== vide, Compteur2 is Compteur+1,initListePosition(LPositions,LPositionInit,Compteur2).
-initListePosition(LPositions,[P|LPositionInit],Compteur):- position(P,_,X),initListePosition(LPositions,LPositionInit,Compteur).
+initListePosition(LPositions,[P|LPositionInit],Compteur):- position(P,_,_),initListePosition(LPositions,LPositionInit,Compteur).
 
 
 %-----------------Attribution al�atoire des personnages-------
@@ -121,9 +121,7 @@ lancerJeu():-
     retractall(position(_,_,_)),
 
     nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,
-
-
-    %write('Premierement, recopie le plateau fourni dans la documentation. Au fur et e mesure du jeu, nous t\'informerons des mises-e-jour concernant la position de chaque personnage.'),nl,nl,
+    write('Voici le plateau, les cases bleues sont les cases sniper, les cases jaunes sont les cases normales.'),nl,nl,
 
     init(LPerso,_),
     positions(LPositionInit),
@@ -134,20 +132,22 @@ lancerJeu():-
     initListePosition(LPosition,LPositionInit,0),
     write(LPosition),
 
-    %write('Ces informations seront presentees sous forme de 2 listes : la premiere sera la liste des personnages restants, et la deuxieme sera leur position, respectivement.'),nl,
 
     write('Voici les positions initiales des personnages : '),nl,nl,
 
-    affiche(1,LPerso,LPosition,0),
-    %write('Le personnage a est donc sur la case 1.'),nl,nl,
-
-    %listing(joueur),nl,nl,
+    affiche(1,LPerso,LPosition,0),nl,
 
     write('Tu es le joueur 1. Tes cibles sont les personnages '),
     joueur(1,T,X,Y,Z),
     write(X),write(', '),write(Y),write(' et '),write(Z),
 
-    write('. Le tueur que tu diriges est le personnage '), write(T),write('.'),nl,nl,write('Honneur aux humains ! Tu commences.'), nl,nl,
+    write('. Le tueur que tu diriges est le personnage '), write(T),write('.'),nl,nl,
+
+    joueur(2,T2,X2,Y2,Z2),
+    write('L\'IA a pour tueur '), write(T2),write(','), write(' et comme cibles '),nl,nl,write(X2),write(', '),write(Y2),write(' et '),write(Z2),nl,nl,
+
+
+    write('Honneur aux humains ! Tu commences.'), nl,nl,
 
     write('Derniere chose, n\'oublie pas de finir ta ligne par un point quand tu me parles !'),nl,nl,
     write('Tu es pret.e ?'),nl,read(_),nl,
@@ -170,8 +170,6 @@ tourATour(LPerso,LPosition,1,Gagnant):-
 
     write('Voici les nouvelles positions des personnages : '),nl,nl,
     affiche(1,LPerso2,LPosition2,0),
-
-    %write(LPerso2),nl,write(LPosition2),nl,nl,
 
     write('Deuxieme action :'),nl,nl,
     choixAction(Action,LPerso2,LPosition2,LPerso3,LPosition3),
@@ -265,7 +263,7 @@ verificationTuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut,Rep
 
 
 %---------------------------Actions de l'IA-----------------------------
-%Si pas de cible possible, on fait un deplacement ???
+
 
 trouverCase(Random):- random_between(1,35,Random),position(Random,_,X),X\=vide.
 trouverCase(Random):- trouverCase(Random).
@@ -299,8 +297,7 @@ caseValable(Input):-integer(Input),position(Input,_,X),X\=='vide'.
 %V�rifie que c'est un personnage et qu'il est vivant
 personnageValable(Input,LPerso):-atom(Input),atom_chars(Input,ListInput),length(ListInput,1),memberchk(Input,LPerso).
 
-% personnageValable(Input,LPerso):-write('Ce n\'est pas un personnage, ou
-% alors il a deja ete elimine... Choisis-en un autre.'),nl.
+
 
 
 

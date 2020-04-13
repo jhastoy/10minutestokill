@@ -31,51 +31,90 @@ position(3,(3,4),vide).
 position(2,(2,4),vide).
 position(1,(4,5),vide).
 
-joueur(1,a,c,d,e). %a = tueur, c,d,e = cibles
-joueur(2,b,f,g,h).
+positionToCoordinate('A',1).
+positionToCoordinate('B',2).
+positionToCoordinate('C',3).
+positionToCoordinate('D',4).
+positionToCoordinate('E',5).
 
+
+%joueur(1,a,c,d,e). %a = tueur, c,d,e = cibles
+%joueur(2,b,f,g,h).
+
+:-dynamic joueur/5.
 
 positions([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30]).
 init([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p],[4,8,9,10,12,13,14,16,17,18,20,21,22,23,27,28]).
+
+%-----------------Attribution aléatoire des personnages-------
+
+randomPerso([],_).
+randomPerso([X|LP],LPerso):-random_member(X,LPerso),delete(LPerso,X,LPerso2),randomPerso(LP,LPerso2).
+
+attributionPerso():-randomPerso([A,B,C,D,E,F,G,H],[a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p]),assert(joueur(1,A,B,C,D)),assert(joueur(2,E,F,G,H)).
+
 %-----------------------------Affichage--------------------------
 
+caseToColor(vide,black).
+caseToColor(sniper,cyan).
+caseToColor(normale,yellow).
 
 retourLigne(X,XOut,Ligne,LigneOut):-Y is X mod 6,  Y\=0 , XOut is X+1, LigneOut is Ligne.
+retourLigne(X,XOut,Ligne,LigneOut):- Y is X mod 6,  Y==0 ,Ligne ==0, LigneOut is 1,XOut is X-5,nl.
+
 retourLigne(X,XOut,Ligne,LigneOut):- Y is X mod 6,  Y==0 ,Ligne \= 4, LigneOut is Ligne +1,XOut is X-5,nl.
 retourLigne(X,XOut,Ligne,LigneOut):- Y is X mod 6, Y==0, Ligne == 4, LigneOut is 1,XOut is X+1, nl.
 
 
-affichePersoLigne(_,_,_,Ligne):-Ligne\=2, espaces(21).
+afficheLettre(Ligne,X):- Ligne == 2,Y is X mod 6,  Y==0, write("||      "), Nombre is  X/6,positionToCoordinate(Lettre,Nombre),write(Lettre).
+afficheLettre(_,X):- Y is X mod 6,  Y==0, write("||      ").
 
-affichePersoLigne(LPerso,LPosition,Position,Ligne):-Ligne==2,recupPersoListe(Persos,LPerso,LPosition,Position),length(Persos,L), L \=0, write(Persos),espaces(21-(2*L+1)).
-affichePersoLigne(LPerso,LPosition,Position,Ligne):- Ligne==2,recupPersoListe(Persos,LPerso,LPosition,Position),length(Persos,L), L == 0,espaces(21).
+afficheLettre(_,_).
 
+affichePersoLigne(_,_,_,Ligne,TypeCase):-Ligne\=2, espaces(21,TypeCase).
+
+affichePersoLigne(LPerso,LPosition,Position,Ligne,TypeCase):-Ligne==2,recupPersoListe(Persos,LPerso,LPosition,Position),length(Persos,L), L \=0, caseToColor(TypeCase,Color),ansi_format([bold,bg(Color)], Persos, [world]),espaces(21-(2*L+1),TypeCase).
+affichePersoLigne(LPerso,LPosition,Position,Ligne,TypeCase):- Ligne==2,recupPersoListe(Persos,LPerso,LPosition,Position),length(Persos,L), L == 0,espaces(21,TypeCase).
 
 
 affiche(31,_,_,_).
-affiche(X,LPerso,LPosition,Ligne):-Ligne \=4, position(X,_,normale),write("|  "),affichePersoLigne(LPerso,LPosition,X,Ligne),write("  | "),retourLigne(X,XOut,Ligne,LigneOut),affiche(XOut,LPerso,LPosition,LigneOut).
-affiche(X,LPerso,LPosition,Ligne):-Ligne \=4, position(X,_,sniper),write("|- "),affichePersoLigne(LPerso,LPosition,X,Ligne),write(" -| "),retourLigne(X,XOut,Ligne,LigneOut),affiche(XOut,LPerso,LPosition,LigneOut).
-affiche(X,LPerso,LPosition,Ligne):-Ligne \=4, position(X,_,vide),write("   "),affichePersoLigne(LPerso,LPosition,X,Ligne),write("    "),retourLigne(X,XOut,Ligne,LigneOut),affiche(XOut,LPerso,LPosition,LigneOut).
+affiche(X,LPerso,LPosition,Ligne):-Ligne ==0,write("============= "),write(X),write(" ============"), retourLigne(X,XOut,Ligne,LigneOut),affiche(XOut,LPerso,LPosition,LigneOut).
+
+affiche(X,LPerso,LPosition,Ligne):-Ligne \=4, position(X,_,normale),ansi_format([bold,bg(yellow)], "|  ", [world]),affichePersoLigne(LPerso,LPosition,X,Ligne,normale),ansi_format([bold,bg(yellow)], "  |", [world]),write(" "),afficheLettre(Ligne,X),retourLigne(X,XOut,Ligne,LigneOut),affiche(XOut,LPerso,LPosition,LigneOut).
+affiche(X,LPerso,LPosition,Ligne):-Ligne \=4, position(X,_,sniper),ansi_format([bold,bg(cyan)], "|- ", [world]),affichePersoLigne(LPerso,LPosition,X,Ligne,sniper),ansi_format([bold,bg(cyan)], " -|", [world]),write(" "),afficheLettre(Ligne,X),retourLigne(X,XOut,Ligne,LigneOut),affiche(XOut,LPerso,LPosition,LigneOut).
+affiche(X,LPerso,LPosition,Ligne):-Ligne \=4, position(X,_,vide),ansi_format([bold,bg(black)], "   ", [world]),affichePersoLigne(LPerso,LPosition,X,Ligne,vide),ansi_format([bold,bg(black)], "   ", [world]),   write(" "),afficheLettre(Ligne,X),retourLigne(X,XOut,Ligne,LigneOut),affiche(XOut,LPerso,LPosition,LigneOut).
 
 
-affiche(X,LPerso,LPosition,Ligne):-Ligne == 4,write("--------------------------"), retourLigne(X,XOut,Ligne,LigneOut),affiche(XOut,LPerso,LPosition,LigneOut).
+affiche(X,LPerso,LPosition,Ligne):-Ligne == 4,write("----------------------------"), afficheLettre(Ligne,X),retourLigne(X,XOut,Ligne,LigneOut),affiche(XOut,LPerso,LPosition,LigneOut).
 
 
-espaces(0).
-espaces(X):- write(" "),Y is X-1,espaces(Y).
+espaces(0,_).
+espaces(X,TypeCase):- caseToColor(TypeCase,Color),ansi_format([bold,bg(Color)], " ", [world]),Y is X-1,espaces(Y,TypeCase).
 
 % ---------------------------Debut dujeu-----------------------
 
 
 
-lancerJeu():-nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,write('Premierement, recopie le plateau fourni dans la documentation. Au fur et e mesure du jeu, nous t\'informerons des mises-e-jour concernant la position de chaque personnage.'),nl,nl,
+lancerJeu():-
+    retractall(joueur(_,_,_,_,_)),
+
+    nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,
+
+
+    %write('Premierement, recopie le plateau fourni dans la documentation. Au fur et e mesure du jeu, nous t\'informerons des mises-e-jour concernant la position de chaque personnage.'),nl,nl,
 
     init(LPerso,LPosition),
 
-    write('Ces informations seront presentees sous forme de 2 listes : la premiere sera la liste des personnages restants, et la deuxieme sera leur position, respectivement.'),nl,write('Voici les positions initiales des personnages : '),nl,nl,
+    attributionPerso(),
 
-    affiche(1,LPerso,LPosition,1),
+    %write('Ces informations seront presentees sous forme de 2 listes : la premiere sera la liste des personnages restants, et la deuxieme sera leur position, respectivement.'),nl,
+
+    write('Voici les positions initiales des personnages : '),nl,nl,
+
+    affiche(1,LPerso,LPosition,0),
     write('Le personnage a est donc sur la case 1.'),nl,nl,
+
+    %listing(joueur),nl,nl,
 
     write('Tu es le joueur 1. Tes cibles sont les personnages '),
     joueur(1,T,X,Y,Z),
@@ -102,9 +141,10 @@ tourATour(LPerso,LPosition,1,Gagnant):-
     actionJoueur(Action,LPerso,LPosition,LPerso2,LPosition2,Reponse),
     write(Reponse),nl,nl,
 
-    affiche(1,LPerso2,LPosition2,1),
     write('Voici les nouvelles positions des personnages : '),nl,nl,
-    write(LPerso2),nl,write(LPosition2),nl,nl,
+    affiche(1,LPerso2,LPosition2,1),
+
+    %write(LPerso2),nl,write(LPosition2),nl,nl,
 
     write('Deuxieme action :'),nl,nl,
     choixAction(Action,LPerso2,LPosition2,LPerso3,LPosition3),
@@ -154,7 +194,9 @@ listeVivant([P|LCible],LPerso,LPersoVivant):- not(memberchk(P,LPerso)),listeViva
 actionJoueur(1,LPerso,LPosition,LPerso,LPositionOut,'Le personnage a bien ete deplace !'):-
     write('Quel personnage veux-tu deplacer ?'),nl,read(P),nl,
     personnageValable(P,LPerso),
-    write('Sur quelle case ?'),nl,read(C),nl,
+    write('Sur quelle case ?'),nl,read(Lettre),nl,read(Y),
+    positionToCoordinate(Lettre,X),
+    position(C,(Y,X),_),
     verificationDeplacer(P,C,LPerso,LPosition,LPerso,LPositionOut,'Le personnage a bien ete deplace !').
 
 actionJoueur(2,LPerso,LPosition,LPersoOut,LPositionOut,Reponse):-
@@ -165,7 +207,7 @@ actionJoueur(2,LPerso,LPosition,LPersoOut,LPositionOut,Reponse):-
     joueur(1,Tueur,_,_,_),
     verificationTuer(Methode,Tueur,Cible,LPerso,LPosition,LPersoOut,LPositionOut,Reponse).
 
-% Si on a eu false sur un actionJoueur, c'est forcément a cause %de personnageValable. Donc :
+% Si on a eu false sur un actionJoueur, c'est forcï¿½ment a cause %de personnageValable. Donc :
 
 actionJoueur(X,LPerso,LPosition,LPersoOut,LPositionOut,Reponse):-
     write('Le personnage que tu as choisi n\'est pas un personnage, ou alors il a deja ete elimine... Choisis-en un autre.'),nl,
@@ -212,13 +254,13 @@ ciblesAtteignables(Joueur,LPerso,LPosition,ListeCibles):-setof(Cible,verifCibles
 % et qu'elle est atteignable
 verifCiblesAtteignables(Joueur,Cible, LPerso,LPosition):-tuer(_,Tueur,Cible,LPerso,LPosition,_,_),Cible\==Tueur,joueur(Joueur,Tueur,_,_,_),cible(Cible, Joueur).
 
-% ----------------------Tolerance à l'erreur---------------------------
-%Vérifie que c'est une case, et qu'elle est non vide
+% ----------------------Tolerance ï¿½ l'erreur---------------------------
+%Vï¿½rifie que c'est une case, et qu'elle est non vide
 caseValable(Input):-integer(Input),position(Input,_,X),X\=='vide'.
 
 
 
-%Vérifie que c'est un personnage et qu'il est vivant
+%Vï¿½rifie que c'est un personnage et qu'il est vivant
 personnageValable(Input,LPerso):-atom(Input),atom_chars(Input,ListInput),length(ListInput,1),memberchk(Input,LPerso).
 
 % personnageValable(Input,LPerso):-write('Ce n\'est pas un personnage, ou

@@ -38,11 +38,21 @@ positionToCoordinate('D',4).
 positionToCoordinate('E',5).
 
 
-joueur(1,a,c,d,e). %a = tueur, c,d,e = cibles
-joueur(2,b,f,g,h).
+%joueur(1,a,c,d,e). %a = tueur, c,d,e = cibles
+%joueur(2,b,f,g,h).
+
+:-dynamic joueur/5.
 
 positions([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30]).
 init([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p],[4,8,9,10,12,13,14,16,17,18,20,21,22,23,27,28]).
+
+%-----------------Attribution aléatoire des personnages-------
+
+randomPerso([],_).
+randomPerso([X|LP],LPerso):-random_member(X,LPerso),delete(LPerso,X,LPerso2),randomPerso(LP,LPerso2).
+
+attributionPerso():-randomPerso([A,B,C,D,E,F,G,H],[a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p]),assert(joueur(1,A,B,C,D)),assert(joueur(2,E,F,G,H)).
+
 %-----------------------------Affichage--------------------------
 
 caseToColor(vide,black).
@@ -57,9 +67,9 @@ retourLigne(X,XOut,Ligne,LigneOut):- Y is X mod 6, Y==0, Ligne == 4, LigneOut is
 
 
 afficheLettre(Ligne,X):- Ligne == 2,Y is X mod 6,  Y==0, write("||      "), Nombre is  X/6,positionToCoordinate(Lettre,Nombre),write(Lettre).
-afficheLettre(Ligne,X):- Y is X mod 6,  Y==0, write("||      ").
+afficheLettre(_,X):- Y is X mod 6,  Y==0, write("||      ").
 
-afficheLettre(Ligne,X).
+afficheLettre(_,_).
 
 affichePersoLigne(_,_,_,Ligne,TypeCase):-Ligne\=2, espaces(21,TypeCase).
 
@@ -78,19 +88,24 @@ affiche(X,LPerso,LPosition,Ligne):-Ligne \=4, position(X,_,vide),ansi_format([bo
 affiche(X,LPerso,LPosition,Ligne):-Ligne == 4,write("----------------------------"), afficheLettre(Ligne,X),retourLigne(X,XOut,Ligne,LigneOut),affiche(XOut,LPerso,LPosition,LigneOut).
 
 
-espaces(0,TypeCase).
+espaces(0,_).
 espaces(X,TypeCase):- caseToColor(TypeCase,Color),ansi_format([bold,bg(Color)], " ", [world]),Y is X-1,espaces(Y,TypeCase).
 
 % ---------------------------Debut dujeu-----------------------
 
 
 
-lancerJeu():-nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,
+lancerJeu():-
+    retractall(joueur(_,_,_,_,_)),
+
+    nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,
 
 
     %write('Premierement, recopie le plateau fourni dans la documentation. Au fur et e mesure du jeu, nous t\'informerons des mises-e-jour concernant la position de chaque personnage.'),nl,nl,
 
     init(LPerso,LPosition),
+
+    attributionPerso(),
 
     %write('Ces informations seront presentees sous forme de 2 listes : la premiere sera la liste des personnages restants, et la deuxieme sera leur position, respectivement.'),nl,
 
@@ -98,6 +113,8 @@ lancerJeu():-nl,write('Salut ! Bienvenue sur 10 minutes to kill !'),nl,nl,
 
     affiche(1,LPerso,LPosition,0),
     write('Le personnage a est donc sur la case 1.'),nl,nl,
+
+    %listing(joueur),nl,nl,
 
     write('Tu es le joueur 1. Tes cibles sont les personnages '),
     joueur(1,T,X,Y,Z),
@@ -177,7 +194,7 @@ listeVivant([P|LCible],LPerso,LPersoVivant):- not(memberchk(P,LPerso)),listeViva
 actionJoueur(1,LPerso,LPosition,LPerso,LPositionOut,'Le personnage a bien ete deplace !'):-
     write('Quel personnage veux-tu deplacer ?'),nl,read(P),nl,
     personnageValable(P,LPerso),
-    write('Sur quelle case ?'),nl,read(Lettre),nl,read(Y),
+    write('Sur quelle case ? Exemple : B4.'),nl,read(Lettre),nl,read(Y),
     positionToCoordinate(Lettre,X),
     position(C,(Y,X),_),
     verificationDeplacer(P,C,LPerso,LPosition,LPerso,LPositionOut,'Le personnage a bien ete deplace !').
